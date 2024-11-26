@@ -23,12 +23,11 @@ func (userHandler *User) CreateUser(c *fiber.Ctx) error {
 
 	err := userHandler.repository.Create(&request)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(request)
 }
-
 
 func (userHandler *User) Login(c *fiber.Ctx) error {
 

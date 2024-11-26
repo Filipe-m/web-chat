@@ -7,18 +7,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
-
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func Connect() (*sql.DB, error) {
-	err := godotenv.Load(".env")
-	if err != nil {
-		return nil, fmt.Errorf("erro ao carregar o arquivo .env: %v", err)
-	}
 
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {

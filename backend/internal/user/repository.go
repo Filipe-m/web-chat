@@ -47,9 +47,9 @@ func (repo *Repository) Authenticate(email, password string) (string, error) {
 
 	secret := os.Getenv("JWT")
 	claims := jwt.MapClaims{
-		"username": user.Name,
-		"id":       user.ID,
-		"exp":      time.Now().Add(time.Hour * 1).Unix(),
+		"name": user.Name,
+		"id":   user.ID,
+		"exp":  time.Now().Add(time.Hour * 1).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -65,7 +65,7 @@ func (repo *Repository) Create(user *User) error {
 
 	password, err := hashPassword(user.Password)
 	if err != nil {
-		return fmt.Errorf("Erro ao criptografar a senha: %v", err)
+		return fmt.Errorf("erro ao criptografar a senha: %v", err)
 	}
 
 	query := "INSERT INTO users (name, password, email) VALUES ($1, $2, $3)"
@@ -73,7 +73,7 @@ func (repo *Repository) Create(user *User) error {
 	_, err = repo.DB.Exec(query, user.Name, password, user.Email)
 
 	if err != nil {
-		return fmt.Errorf("Erro ao inserir usuário: %v", err)
+		return fmt.Errorf("erro ao inserir usuário: %v", err)
 	}
 
 	return nil

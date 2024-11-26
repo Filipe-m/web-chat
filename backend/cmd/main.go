@@ -1,17 +1,28 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
 	"web-chat/cmd/handlers"
 	"web-chat/internal/database"
+	"web-chat/internal/middleware"
 	"web-chat/internal/user"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
 func main() {
+
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		fmt.Printf("erro ao carregar o arquivo .env: %v", err)
+		return
+	}
 
 	db, err := database.Connect()
 
@@ -23,9 +34,18 @@ func main() {
 
 	userHandler := handlers.NewUserHandler(user.NewRepository(db))
 
+	secret := os.Getenv("JWT")
+
+	if secret == "" {
+		fmt.Println("JWT secret não está definido no arquivo .env:", err)
+		return
+	}
+
 	app := fiber.New()
 
-	app.Get("/", func(c *fiber.Ctx) error {
+	auth := middleware.JWTMiddleware(secret)
+
+	app.Get("/", auth, func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
 	})
 
@@ -39,7 +59,7 @@ func main() {
 
 	app.Post("/login", userHandler.Login)
 
-	app.Get("/user/:id", userHandler.CreateUser)
+	app.Post("/user", userHandler.CreateUser)
 
 	log.Fatal(app.Listen(":9090"))
 }
