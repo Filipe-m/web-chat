@@ -37,9 +37,9 @@ func JWTMiddleware(secret string) fiber.Handler {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Erro ao realizar pase do token"})
 		}
 
-		c.Locals("userID", claims["id"])
-		c.Locals("userName", claims["name"])
-
+		c.Locals("id", claims["id"].(string))
+		c.Locals("userName", claims["name"].(string))
+		
 		return c.Next()
 	}
 }

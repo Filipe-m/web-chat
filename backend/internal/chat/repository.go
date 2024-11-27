@@ -14,11 +14,10 @@ func NewRepository(db *sql.DB) *Repository {
 }
 
 func (repo *Repository) Create(chat *Chat, user int) error {
-	var err error
 
-	query := "INSERT INTO chat (name, created_by) VALUES ($1, $2)"
+	query := "INSERT INTO chats (name, created_by) VALUES ($1, $2) RETURNING id, name, created_by, created_at, updated_at"
 
-	_, err = repo.DB.Exec(query, chat.Name, user)
+	err := repo.DB.QueryRow(query, chat.Name, user).Scan(&chat.ID, &chat.Name, &chat.Created_by, &chat.CreatedAt, &chat.UpdatedAt)
 
 	if err != nil {
 		return fmt.Errorf("erro ao criar chat: %v", err)

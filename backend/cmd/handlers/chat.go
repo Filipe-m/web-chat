@@ -22,12 +22,13 @@ func (chatHandler *Chat) Create(c *fiber.Ctx) error {
 		return err
 	}
 
-	userID, ok := c.Locals("userID").(int)
-	if !ok {
-		return c.Status(fiber.StatusBadRequest).SendString("userID inválido")
+	userID, err := strconv.Atoi(c.Locals("id").(string))
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
-	err := chatHandler.repository.Create(&request, userID)
+	err = chatHandler.repository.Create(&request, userID)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
@@ -42,17 +43,22 @@ func (chatHandler *Chat) GetChats(c *fiber.Ctx) error {
 		return nil
 	}
 
+	if chats == nil {
+		return c.SendStatus(fiber.StatusNoContent)
+	}
+
 	return c.Status(fiber.StatusOK).JSON(chats)
 }
 
 func (chatHandler *Chat) Delete(c *fiber.Ctx) error {
 
-	userID, ok := c.Locals("userID").(int)
-	if !ok {
-		return c.Status(fiber.StatusBadRequest).SendString("userID inválido")
+	userID, err := strconv.Atoi(c.Locals("id").(string))
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
-	chatIDStr := c.Params("chatID")
+	chatIDStr := c.Params("id")
 	chatID, err := strconv.Atoi(chatIDStr)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{

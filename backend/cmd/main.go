@@ -119,7 +119,7 @@ func main() {
 
 	app.Get("/chat", auth, chatHandler.GetChats)
 
-	app.Delete("/chat", auth, chatHandler.Delete)
+	app.Delete("/chat/:id", auth, chatHandler.Delete)
 
 	app.Post("/chat", auth, chatHandler.Create)
 
