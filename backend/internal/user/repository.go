@@ -78,3 +78,16 @@ func (repo *Repository) Create(user *User) error {
 
 	return nil
 }
+
+func (repo *Repository) GetUserByID(user *User) error {
+	query := "SELECT id, name, password, email, created_at, updated_at FROM users WHERE id = $1 RETURNING"
+
+	err := repo.DB.QueryRow(query, user.ID).Scan(&user.ID, &user.Name, &user.CreatedAt, &user.UpdatedAt)
+
+	if err != nil {
+		return fmt.Errorf("usuário não encontrado: %v", err)
+	}
+
+	return nil
+
+}

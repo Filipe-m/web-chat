@@ -1,14 +1,24 @@
 package handlers
 
 import (
+	"log"
 	"strconv"
+	"sync"
 	"web-chat/internal/chat"
 
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 )
 
 type Chat struct {
 	repository *chat.Repository
+}
+
+var connections = struct {
+	sync.Mutex
+	clients map[*websocket.Conn]bool
+}{
+	clients: make(map[*websocket.Conn]bool),
 }
 
 func NewChatHandler(repository *chat.Repository) *Chat {
@@ -72,4 +82,61 @@ func (chatHandler *Chat) Delete(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(fiber.StatusOK)
+}
+
+func (chatHandler *Chat) Connect(c *websocket.Conn) {
+	var chat chat.Chat
+
+	chatID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		log.Println("ID inválido:", err)
+		c.Close()
+		return
+	}
+
+	err = chatHandler.repository.GetChatByID(chatID, &chat)
+	if err != nil {
+		log.Println("Chat não encontrado:", err)
+		c.Close()
+		return
+	}
+
+	log.Println("Conexão WebSocket estabelecida para o chat ", chat.Name, "")
+
+	connections.Lock()
+	connections.clients[c] = true
+	connections.Unlock()
+
+	defer func() {
+		connections.Lock()
+		delete(connections.clients, c)
+		connections.Unlock()
+		c.Close()
+	}()
+
+	for {
+		_, msg, err := c.ReadMessage()
+		if err != nil {
+			log.Printf("Erro ao ler mensagem: %v", err)
+			break
+		}
+
+		broadcast(msg, c)
+	}
+}
+
+func broadcast(msg []byte, sender *websocket.Conn) {
+	connections.Lock()
+	defer connections.Unlock()
+
+	for client := range connections.clients {
+		if client != sender {
+			err := client.WriteMessage(websocket.TextMessage, msg)
+			if err != nil {
+				log.Printf("Erro ao enviar mensagem: %v", err)
+				client.Close()
+				delete(connections.clients, client)
+			}
+		}
+	}
 }

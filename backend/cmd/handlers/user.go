@@ -47,3 +47,11 @@ func (userHandler *User) Login(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(token)
 }
+
+func (userHandler *User) GetUserByID(userID int) user.User {
+	var user user.User
+
+	userHandler.repository.GetUserByID(&user)
+
+	return user
+}

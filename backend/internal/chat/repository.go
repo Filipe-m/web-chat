@@ -76,3 +76,16 @@ func (repo *Repository) Delete(chatID, userID int) error {
 
 	return nil
 }
+
+func (repo *Repository) GetChatByID(chatID int, chat *Chat) error {
+
+	query := "SELECT id, name, created_by, created_at, updated_at FROM chats where id = $1"
+
+	err := repo.DB.QueryRow(query, chatID).Scan(&chat.ID, &chat.Name, &chat.Created_by, &chat.CreatedAt, &chat.UpdatedAt)
+
+	if err != nil {
+		return fmt.Errorf("chat não encontrado: %v", err)
+	}
+
+	return nil
+}
