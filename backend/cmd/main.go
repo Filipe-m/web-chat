@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"web-chat/cmd/handlers"
 	"web-chat/internal/chat"
 	"web-chat/internal/database"
 	"web-chat/internal/middleware"
@@ -33,8 +32,13 @@ func main() {
 
 	defer db.Close()
 
-	userHandler := handlers.NewUserHandler(user.NewRepository(db))
-	chatHandler := handlers.NewChatHandler(chat.NewRepository(db))
+	userRepo := user.NewRepository(db)
+	userService := user.NewService(userRepo)
+	userHandler := user.NewHandler(userService)
+
+	chatRepo := chat.NewRepository(db)
+	chatService := chat.NewService(chatRepo)
+	chatHandler := chat.NewHandler(chatService)
 
 	secret := os.Getenv("JWT")
 
@@ -61,15 +65,13 @@ func main() {
 
 	app.Get("/ws/:id", websocket.New(chatHandler.Connect))
 
-	app.Get("/chat", auth, chatHandler.GetChats)
-
 	app.Delete("/chat/:id", auth, chatHandler.Delete)
 
 	app.Post("/chat", auth, chatHandler.Create)
 
 	app.Post("/login", userHandler.Login)
 
-	app.Post("/user", userHandler.CreateUser)
+	app.Post("/user", userHandler.Create)
 
 	log.Fatal(app.Listen(":9090"))
 }

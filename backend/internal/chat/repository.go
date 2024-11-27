@@ -5,19 +5,21 @@ import (
 	"fmt"
 )
 
+// Estrutura concreta
 type Repository struct {
 	DB *sql.DB
 }
 
+// Construtor para a estrutura
 func NewRepository(db *sql.DB) *Repository {
 	return &Repository{DB: db}
 }
 
-func (repo *Repository) Create(chat *Chat, user int) error {
+func (repo *Repository) Create(chat *Chat, userID int) error {
 
 	query := "INSERT INTO chats (name, created_by) VALUES ($1, $2) RETURNING id, name, created_by, created_at, updated_at"
 
-	err := repo.DB.QueryRow(query, chat.Name, user).Scan(&chat.ID, &chat.Name, &chat.Created_by, &chat.CreatedAt, &chat.UpdatedAt)
+	err := repo.DB.QueryRow(query, chat.Name, userID).Scan(&chat.ID, &chat.Name, &chat.Created_by, &chat.CreatedAt, &chat.UpdatedAt)
 
 	if err != nil {
 		return fmt.Errorf("erro ao criar chat: %v", err)
