@@ -71,15 +71,19 @@ func (h *Handler) Delete(c *fiber.Ctx) error {
 func (h *Handler) Connect(c *websocket.Conn) {
 	var chat Chat
 
+	userID := int(c.Locals("id").(float64))
+
 	chatID, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		log.Println("ID inválido:", err)
+		log.Println("chatID inválido:", err)
 		c.Close()
 	}
 
-	err = h.service.GetChatByID(chatID, chat)
+	chat, err = h.service.GetChatByID(chatID, chat)
 	if err != nil {
 		log.Println("Chat não encontrado:", err)
 		c.Close()
 	}
+
+	h.service.Connect(c, userID, chat)
 }

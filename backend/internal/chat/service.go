@@ -7,11 +7,15 @@ import (
 )
 
 type Service struct {
-	repository RepositoryInterface
+	repository  RepositoryInterface
+	userService UserService
 }
 
-func NewService(repository RepositoryInterface) *Service {
-	return &Service{repository: repository}
+func NewService(repository RepositoryInterface, userService UserService) *Service {
+	return &Service{
+		repository:  repository,
+		userService: userService,
+	}
 }
 
 func (s *Service) Create(chat Chat, userID int) (Chat, error) {
@@ -35,20 +39,26 @@ func (s *Service) Delete(chatID int, userID int) error {
 	return nil
 }
 
-func (s *Service) GetChatByID(chatID int, chat Chat) error {
+func (s *Service) GetChatByID(chatID int, chat Chat) (Chat, error) {
 
 	err := s.repository.GetChatByID(chatID, &chat)
 	if err != nil {
-		return err
+		return Chat{}, err
 	}
 
-	return nil
+	return chat, nil
 }
 
-func (s *Service) Connect(c *websocket.Conn, userID int) {
-	var chat Chat
+func (s *Service) Connect(c *websocket.Conn, userID int, chat Chat) {
 
-	log.Println("Conexão WebSocket estabelecida para o chat ", chat.Name, "")
+	user, err := s.userService.GetUserByID(userID)
+
+	if err != nil {
+		log.Println("Usuário inválido")
+		return
+	}
+
+	log.Println("Conexão WebSocket estabelecida  \n\tchat: ", chat.Name, " \n\tusuário: ", user.Name)
 
 	connections.Lock()
 	connections.clients[c] = true
@@ -64,12 +74,21 @@ func (s *Service) Connect(c *websocket.Conn, userID int) {
 	for {
 		_, msg, err := c.ReadMessage()
 		if err != nil {
-			log.Printf("Erro ao ler mensagem: %v", err)
+
+			if websocket.IsCloseError(err,
+				websocket.CloseNormalClosure,
+				websocket.CloseGoingAway,
+				websocket.CloseNoStatusReceived) {
+				log.Println("Conexão fechada pelo cliente.")
+			} else {
+				log.Printf("Erro ao ler mensagem: %v", err)
+			}
 			break
 		}
 
 		broadcast(msg, c)
 	}
+
 }
 
 func broadcast(msg []byte, sender *websocket.Conn) {

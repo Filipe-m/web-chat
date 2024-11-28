@@ -37,7 +37,7 @@ func main() {
 	userHandler := user.NewHandler(userService)
 
 	chatRepo := chat.NewRepository(db)
-	chatService := chat.NewService(chatRepo)
+	chatService := chat.NewService(chatRepo, userService)
 	chatHandler := chat.NewHandler(chatService)
 
 	secret := os.Getenv("JWT")
@@ -63,7 +63,7 @@ func main() {
 		return fiber.ErrUpgradeRequired
 	})
 
-	app.Get("/ws/:id", websocket.New(chatHandler.Connect))
+	app.Get("/ws/:id", auth, websocket.New(chatHandler.Connect))
 
 	app.Delete("/chat/:id", auth, chatHandler.Delete)
 

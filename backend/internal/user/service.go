@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"net/mail"
 	"os"
 	"time"
 
@@ -51,6 +52,8 @@ func (s *Service) Authenticate(credentials User) string {
 func (s *Service) GetUserByID(userID int) (User, error) {
 	var user User
 
+	user.ID = userID
+
 	err := s.repository.GetUserByID(&user)
 
 	if err != nil {
@@ -61,8 +64,17 @@ func (s *Service) GetUserByID(userID int) (User, error) {
 }
 
 func (s *Service) Create(user User) error {
-	//validaçãow
-	err := s.repository.Create(&user)
+
+	if (user.Name == "") || (user.Password == "") {
+		return fmt.Errorf("nome ou senha ausentes")
+	}
+
+	_, err := mail.ParseAddress(user.Email)
+	if err != nil {
+		return fmt.Errorf("email invalido")
+	}
+
+	err = s.repository.Create(&user)
 
 	if err != nil {
 		return err
