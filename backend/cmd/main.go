@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"web-chat/internal/chat"
 	"web-chat/internal/database"
 	"web-chat/internal/middleware"
+	"web-chat/internal/rooms"
 	"web-chat/internal/user"
+
+	"github.com/gofiber/contrib/swagger"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
@@ -36,9 +38,9 @@ func main() {
 	userService := user.NewService(userRepo)
 	userHandler := user.NewHandler(userService)
 
-	chatRepo := chat.NewRepository(db)
-	chatService := chat.NewService(chatRepo, userService)
-	chatHandler := chat.NewHandler(chatService)
+	roomRepo := rooms.NewRepository(db)
+	roomService := rooms.NewService(roomRepo, userService)
+	roomHandler := rooms.NewHandler(roomService)
 
 	secret := os.Getenv("JWT")
 
@@ -50,10 +52,7 @@ func main() {
 	app := fiber.New()
 
 	auth := middleware.JWTMiddleware(secret)
-
-	app.Get("/", auth, func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+	authParam := middleware.JWTMiddlewareParam(secret)
 
 	app.Use("/ws", func(c *fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {
@@ -63,15 +62,30 @@ func main() {
 		return fiber.ErrUpgradeRequired
 	})
 
-	app.Get("/ws/:id", auth, websocket.New(chatHandler.Connect))
+	cfg := swagger.Config{
+		BasePath: "/",
+		FilePath: "docs/swagger.json",
+		Path:     "swagger",
+		Title:    "Web Chat",
+	}
 
-	app.Delete("/chat/:id", auth, chatHandler.Delete)
+	app.Use(swagger.New(cfg))
+	
+	app.Post("/auth/register", userHandler.Create)
+	//TODO: verificar se retorna um 404 e 401
+	app.Post("/auth/login", userHandler.Login)
+	
+	app.Post("/room", auth, roomHandler.Create)
+	app.Get("/room", auth, roomHandler.GetRoom)
+	app.Get("/room/:id", auth, roomHandler.GetRoom)
+	//TODO: verificar se retorna um 404
+	app.Delete("/room/:id", auth, roomHandler.Delete)
 
-	app.Post("/chat", auth, chatHandler.Create)
+	app.Get("/ws/:id", authParam, websocket.New(roomHandler.Connect))
+	//TODO: created_by retornando o id do usuário e não o nome
+	app.Get("/messages/:id", auth, roomHandler.GetMessages)
 
-	app.Post("/login", userHandler.Login)
 
-	app.Post("/user", userHandler.Create)
 
 	log.Fatal(app.Listen(":9090"))
 }
