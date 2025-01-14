@@ -33,6 +33,7 @@ export function websocketAuth(ws, req, next) {
 
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
+      ws.close(1008, "Token invalido.");
       return;
     }
 
