@@ -1,9 +1,10 @@
 import {
   ActivityIndicator,
   FlatList,
-  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
+  StyleSheet,
   View,
 } from "react-native";
 import { useLocalSearchParams, useNavigation } from "expo-router";
@@ -13,6 +14,7 @@ import { useUser } from "@/contexts/userContext";
 import Feather from "@expo/vector-icons/Feather";
 import MessageItem from "@/components/message";
 import { useSession } from "@/contexts/authContext";
+import React from "react";
 
 interface Message {
   id: number;
@@ -22,7 +24,7 @@ interface Message {
   user: {
     name: string;
   };
-  user_id: number | null; // Permitir null em user_id
+  user_id: number | null;
 }
 
 export default function Room() {
@@ -41,7 +43,7 @@ export default function Room() {
   const socketRef = useRef<WebSocket | null>(null);
 
   const getMessages = async (pageNumber: number) => {
-    if (loading || !hasMore) return;
+    if ((loading || !hasMore) && isConnected) return;
 
     setLoading(true);
 
@@ -98,7 +100,6 @@ export default function Room() {
   const sendMessage = () => {
     if (socketRef.current && messageInput.trim()) {
       const obj: Message = {
-        // Declarar explicitamente o tipo Message
         id: Date.now(),
         content: messageInput,
         created_at: new Date().toISOString(),
@@ -110,7 +111,7 @@ export default function Room() {
       };
 
       socketRef.current.send(JSON.stringify(obj));
-      setMessages((prevMessages) => [obj, ...prevMessages]); // Sempre retorna um array de Message[]
+      setMessages((prevMessages) => [obj, ...prevMessages]);
       setMessageInput("");
     }
   };
@@ -140,18 +141,30 @@ export default function Room() {
         inverted={true}
         keyboardShouldPersistTaps="handled"
       />
-      <View style={styles.messageInputWrapper}>
-        <TextInput
-          style={styles.messageInput}
-          value={messageInput}
-          onChangeText={setMessageInput}
-          placeholder="Digite uma mensagem"
-          multiline={true}
-        />
-        <TouchableOpacity onPress={() => sendMessage()} style={styles.sendIcon}>
-          <Feather name="send" size={20} color="black" />
-        </TouchableOpacity>
-      </View>
+      {isConnected ? (
+        <View style={styles.messageInputWrapper}>
+          <TextInput
+            style={styles.messageInput}
+            value={messageInput}
+            onChangeText={setMessageInput}
+            placeholder="Digite uma mensagem"
+            multiline={true}
+          />
+          <TouchableOpacity
+            onPress={() => sendMessage()}
+            style={styles.sendIcon}
+          >
+            <Feather name="send" size={20} color="black" />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <>
+          <View style={styles.tryingToConnect}>
+            <Text style={{fontSize: 15}}>Estabelecendo conexão...</Text>
+            <ActivityIndicator size="small" color="#0000ff" />
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -211,4 +224,11 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     paddingBottom: 10,
   },
+  tryingToConnect:{
+    flexDirection:"row",
+    width:"100%",
+    alignItems:"center",
+    justifyContent:"center",
+    paddingVertical:20,
+  }
 });

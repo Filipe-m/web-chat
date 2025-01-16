@@ -46,7 +46,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const parseJwt = (token: string) => {
       try {
         return JSON.parse(atob(token.split(".")[1]));
-      } catch (e) {
+      } catch (error) {
+        console.log(error);
         return null;
       }
     };

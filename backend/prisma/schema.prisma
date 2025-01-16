@@ -44,7 +44,7 @@ model Message {
   created_at DateTime @default(now())
   user       User     @relation(fields: [user_id], references: [id])
   user_id    Int
-  chat       Chat     @relation(fields: [chat_id], references: [id])
+  chat       Chat     @relation(fields: [chat_id], references: [id], onDelete: Cascade)
   chat_id    Int
 
   @@map("messages")

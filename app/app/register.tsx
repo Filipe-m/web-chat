@@ -1,19 +1,51 @@
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, View, Text, TextInput, Pressable } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
+import api from "@/scripts/axios";
 
 export default function Register() {
+  const [name, onChangeName] = React.useState("");
   const [email, onChangeEmail] = React.useState("");
   const [password, onChangePassword] = React.useState("");
   const [confirmPassword, onChangeConfirmPassowrd] = React.useState("");
   const [showPassword, onChangeShowPassword] = React.useState(true);
   const [showConfirmPassword, onChangeShowConfirmPassword] =
     React.useState(true);
+  const router = useRouter();
+
+  const register = async () => {
+    if (password !== confirmPassword) {
+      return;
+    }
+    try {
+      await api.post("/register", {
+        name: name,
+        email: email,
+        password: password,
+      });
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+    onChangeName("");
+    onChangeEmail("");
+    onChangePassword("");
+    onChangeConfirmPassowrd("");
+    router.push("/login");
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.formContainer}>
+        <Text style={styles.texto}>Nome:</Text>
+        <TextInput
+          style={styles.input}
+          onChangeText={onChangeName}
+          value={name}
+          placeholder="Nome"
+          keyboardType="default"
+        />
         <Text style={styles.texto}>Email:</Text>
         <TextInput
           style={styles.input}
@@ -73,7 +105,7 @@ export default function Register() {
         </View>
 
         <Pressable
-          onPress={() => {}}
+          onPress={register}
           style={({ pressed }) => [
             {
               backgroundColor: pressed ? "#b39cd0" : "#845ec2",

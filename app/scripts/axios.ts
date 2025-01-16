@@ -1,4 +1,3 @@
-import { useStorageState } from "@/hooks/useStorageState";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
@@ -11,7 +10,6 @@ const api = axios.create({
 
 api.interceptors.request.use(
   async (config) => {
-    // const [[isLoading, session], setSession] = useStorageState("session");
     const accessToken = await SecureStore.getItemAsync("session");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
