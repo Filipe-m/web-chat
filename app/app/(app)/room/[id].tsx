@@ -160,7 +160,7 @@ export default function Room() {
       ) : (
         <>
           <View style={styles.tryingToConnect}>
-            <Text style={{fontSize: 15}}>Estabelecendo conexão...</Text>
+            <Text style={{ fontSize: 15 }}>Estabelecendo conexão </Text>
             <ActivityIndicator size="small" color="#0000ff" />
           </View>
         </>
@@ -224,11 +224,11 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     paddingBottom: 10,
   },
-  tryingToConnect:{
-    flexDirection:"row",
-    width:"100%",
-    alignItems:"center",
-    justifyContent:"center",
-    paddingVertical:20,
-  }
+  tryingToConnect: {
+    flexDirection: "row",
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 20,
+  },
 });

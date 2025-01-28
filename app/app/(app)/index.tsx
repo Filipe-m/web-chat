@@ -3,7 +3,6 @@ import {
   StyleSheet,
   View,
   Text,
-  Button,
   FlatList,
   StatusBar,
   Pressable,
@@ -38,9 +37,13 @@ export default function Home() {
   const [refreshing, setRefreshing] = React.useState(false);
 
   const fetchChats = useCallback(async () => {
+    setRefreshing(true);
+
     try {
       const response = await api.get<ChatRoom[]>("/chat");
       setRoomList(response.data);
+
+      setRefreshing(false);
     } catch (err) {
       console.error("Erro ao buscar chats:", err);
     }

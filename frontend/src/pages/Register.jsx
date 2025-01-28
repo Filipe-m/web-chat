@@ -19,9 +19,8 @@ function Register() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Evita o comportamento padrão de recarregar a página.
+    e.preventDefault();
 
-    // Validações adicionais (opcional, pode ser feito no backend também)
     if (formData.password !== formData.confirmPassword) {
       alert("As senhas não correspondem!");
       return;
