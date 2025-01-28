@@ -70,22 +70,20 @@ func main() {
 	}
 
 	app.Use(swagger.New(cfg))
-	
+
 	app.Post("/auth/register", userHandler.Create)
 	//TODO: verificar se retorna um 404 e 401
 	app.Post("/auth/login", userHandler.Login)
-	
+
 	app.Post("/room", auth, roomHandler.Create)
 	app.Get("/room", auth, roomHandler.GetRoom)
 	app.Get("/room/:id", auth, roomHandler.GetRoom)
 	//TODO: verificar se retorna um 404
 	app.Delete("/room/:id", auth, roomHandler.Delete)
 
-	app.Get("/ws/:id", authParam, websocket.New(roomHandler.Connect))
+	app.Get("/:id", authParam, websocket.New(roomHandler.Connect))
 	//TODO: created_by retornando o id do usuário e não o nome
 	app.Get("/messages/:id", auth, roomHandler.GetMessages)
-
-
 
 	log.Fatal(app.Listen(":9090"))
 }

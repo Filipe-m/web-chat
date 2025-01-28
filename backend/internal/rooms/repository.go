@@ -111,11 +111,11 @@ func (repo *Repository) SaveMessage(message Message) (Message, error) {
 	return message, nil
 }
 
-func (repo *Repository) GetAllMessages(roomID int) ([]Message, error) {
+func (repo *Repository) GetAllMessages(roomID int) ([]storedMessages, error) {
 
-	query := "SELECT id, content, created_by, room_id , created_at, updated_at FROM messages where room_id = $1 order by created_at desc"
+	query := "SELECT m.id, m.content , m.created_at, m.updated_at, u.id, u.name FROM messages as m join users as u on u.id = m.created_by where room_id = $1 order by created_at desc"
 
-	var messages []Message
+	var messages []storedMessages
 
 	rows, err := repo.DB.Query(query, roomID)
 
@@ -126,9 +126,9 @@ func (repo *Repository) GetAllMessages(roomID int) ([]Message, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var message Message
+		var message storedMessages
 
-		err := rows.Scan(&message.ID, &message.Content, &message.CreatedBy, &message.RoomId, &message.CreatedAt, &message.UpdatedAt)
+		err := rows.Scan(&message.Id, &message.Content, &message.CreatedAt, &message.UpdatedAt, &message.User.Id, &message.User.Name)
 
 		if err != nil {
 			return nil, fmt.Errorf("erro ao escanear os resultados: %w", err)
@@ -149,11 +149,11 @@ func (repo *Repository) GetAllMessages(roomID int) ([]Message, error) {
 
 }
 
-func (repo *Repository) GetPaginatedMessages(roomId, page, size int) ([]Message, error) {
+func (repo *Repository) GetPaginatedMessages(roomId, page, size int) ([]storedMessages, error) {
 
-	query := "SELECT id, content, created_by, room_id , created_at, updated_at FROM messages where room_id = $1 order by created_at desc limit $2 offset $3"
+	query := "SELECT m.id, m.content , m.created_at, m.updated_at, u.id, u.name FROM messages as m join users as u on u.id = m.created_by where room_id = $1 order by created_at desc limit $2 offset $3"
 
-	var messages []Message
+	var messages []storedMessages
 
 	rows, err := repo.DB.Query(query, roomId, size, (page-1)*size)
 
@@ -164,9 +164,9 @@ func (repo *Repository) GetPaginatedMessages(roomId, page, size int) ([]Message,
 	defer rows.Close()
 
 	for rows.Next() {
-		var message Message
+		var message storedMessages
 
-		err := rows.Scan(&message.ID, &message.Content, &message.CreatedBy, &message.RoomId, &message.CreatedAt, &message.UpdatedAt)
+		err := rows.Scan(&message.Id, &message.Content, &message.CreatedAt, &message.UpdatedAt, &message.User.Id, &message.User.Name)
 
 		if err != nil {
 			return nil, fmt.Errorf("erro ao escanear os resultados: %w", err)

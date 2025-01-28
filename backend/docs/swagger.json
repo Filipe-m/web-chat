@@ -329,21 +329,12 @@
         "description": "Send a message in a chat room",
         "requestBody": {
           "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message": {
-                    "type": "string",
-                    "example": "This is a new message from this user"
-                  }
-                },
-                "required": [
-                  "name",
-                  "email",
-                  "password"
-                ]
+            "string": {
+              "schema":{
+                "type": "string",
+                "example":"Lorem ipsum dolor sit amet. Sed quas aperiam qui maiores corrupti in nulla voluptatem 33 repudiandae "
               }
+              
             }
           }
         },
@@ -387,13 +378,22 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "author": {
+                    "content": {
                       "type": "string",
-                      "example": "john Doe"
+                      "example": "Lorem ipsum dolor sit amet."
                     },
-                    "message": {
-                      "type": "string",
-                      "example": "Hi, this is a new message"
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id":{
+                          "type":"integer",
+                          "example":1
+                        },
+                        "name":{
+                          "type": "string",
+                          "example": "john Doe"
+                        }
+                      }
                     }
                   }
                 }

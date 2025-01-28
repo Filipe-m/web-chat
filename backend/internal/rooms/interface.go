@@ -8,8 +8,8 @@ type RepositoryInterface interface {
 	Delete(roomID, userID int) error
 	SaveMessage(Message) (Message, error)
 	GetRooms() ([]Room, error)
-	GetAllMessages(roomId int) ([]Message, error)
-	GetPaginatedMessages(roomId, page, size int) ([]Message, error)
+	GetAllMessages(roomId int) ([]storedMessages, error)
+	GetPaginatedMessages(roomId, page, size int) ([]storedMessages, error)
 }
 
 type UserService interface {

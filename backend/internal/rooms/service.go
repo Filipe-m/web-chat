@@ -3,6 +3,7 @@ package rooms
 import (
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/gofiber/contrib/websocket"
 )
@@ -10,6 +11,23 @@ import (
 type Service struct {
 	repository  RepositoryInterface
 	userService UserService
+}
+
+type userInfo struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type broadCastMessage struct {
+	Content string   `json:"content"`
+	User    userInfo `json:"user"`
+}
+type storedMessages struct {
+	Id        int
+	Content   string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	User      userInfo
 }
 
 func NewService(repository RepositoryInterface, userService UserService) *Service {
@@ -59,21 +77,21 @@ func (s *Service) SaveMessage(message Message) (Message, error) {
 	return message, nil
 }
 
-func (s *Service) GetMessages(roomId, page, size int) ([]Message, error) {
-	var messages []Message
+func (s *Service) GetMessages(roomId, page, size int) ([]storedMessages, error) {
+	var messages []storedMessages
 	var err error
 
 	if size == 0 {
 		messages, err = s.repository.GetAllMessages(roomId)
 		if err != nil {
-			return []Message{}, err
+			return []storedMessages{}, err
 		}
 
 		return messages, nil
 	}
 	messages, err = s.repository.GetPaginatedMessages(roomId, page, size)
 	if err != nil {
-		return []Message{}, err
+		return []storedMessages{}, err
 	}
 	return messages, nil
 }
@@ -127,21 +145,36 @@ func (s *Service) Connect(c *websocket.Conn, userID int, room Room) {
 			break
 		}
 
-		var messageObj Message
-
-		messageObj = Message{
+		message := Message{
 			Content:   string(msg),
 			CreatedBy: userID,
 			RoomId:    room.ID,
 		}
 
-		message, err := s.SaveMessage(messageObj)
-		broadcast(message, c)
+		log.Println(message.Content)
+
+		message, err = s.SaveMessage(message)
+
+		if err != nil {
+			log.Println(err)
+		}
+
+		userInfo := userInfo{
+			Id:   user.ID,
+			Name: user.Name,
+		}
+
+		broadcastMessage := broadCastMessage{
+			Content: message.Content,
+			User:    userInfo,
+		}
+
+		broadcast(broadcastMessage, c)
 	}
 
 }
 
-func broadcast(messageObj Message, sender *websocket.Conn) {
+func broadcast(messageObj broadCastMessage, sender *websocket.Conn) {
 	connections.Lock()
 	defer connections.Unlock()
 	msgBytes, err := json.Marshal(messageObj)
