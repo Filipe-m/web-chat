@@ -149,13 +149,13 @@ func (repo *Repository) GetAllMessages(roomID int) ([]storedMessages, error) {
 
 }
 
-func (repo *Repository) GetPaginatedMessages(roomId, page, size int) ([]storedMessages, error) {
+func (repo *Repository) GetPaginatedMessages(roomId, lastId, size int) ([]storedMessages, error) {
 
-	query := "SELECT m.id, m.content , m.created_at, m.updated_at, u.id, u.name FROM messages as m join users as u on u.id = m.created_by where room_id = $1 order by created_at desc limit $2 offset $3"
+	query := "SELECT m.id, m.content , m.created_at, m.updated_at, u.id, u.name FROM messages as m join users as u on u.id = m.created_by WHERE m.room_id = $1 AND m.ID > $2 ORDER BY m.ID DESC LIMIT $3"
 
 	var messages []storedMessages
 
-	rows, err := repo.DB.Query(query, roomId, size, (page-1)*size)
+	rows, err := repo.DB.Query(query, roomId, lastId, size)
 
 	if err != nil {
 		return nil, fmt.Errorf("erro ao executar a query: %w", err)

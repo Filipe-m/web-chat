@@ -421,10 +421,10 @@
             }
           },
           {
-            "name": "page",
+            "name": "lastId",
             "in": "query",
             "required": false,
-            "description": "Page number",
+            "description": "Id of the last recived message",
             "schema": {
               "type": "integer",
               "example": 1
@@ -452,28 +452,33 @@
                     "type": "object",
                     "properties": {
                       "id": {
-                        "type": "string",
-                        "example": "1"
+                        "type": "integer",
+                        "example": 1
                       },
                       "content": {
                         "type": "string",
                         "example": "Hi, this is a new message"
                       },
-                      "created_by": {
-                        "type": "string",
-                        "example": "John Doe"
-                      },
-                      "room_id": {
-                        "type": "string",
-                        "example": "1"
-                      },
-                      "created_at": {
+                      "createdAt": {
                         "type": "string",
                         "example": "2021-09-29T00:00:00.000Z"
                       },
-                      "updated_at": {
+                      "updatedAt": {
                         "type": "string",
                         "example": "2021-09-29T00:00:00.000Z"
+                      },
+                      "user":{
+                        "type": "object",
+                        "properties": {
+                          "id":{
+                            "type": "integer",
+                            "example": 12
+                          },
+                          "name":{
+                            "type": "string",
+                            "example":"John Doe"
+                          }
+                        }
                       }
                     }
                   }

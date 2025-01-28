@@ -137,10 +137,10 @@ func (h *Handler) GetRoom(c *fiber.Ctx) error {
 }
 
 func (h *Handler) GetMessages(c *fiber.Ctx) error {
-	var page, size int
+	var lastId, size int
 
 	roomIdParam := c.Params("id")
-	pageParam := c.Query("page")
+	lastIdParam := c.Query("lastId")
 	sizeParam := c.Query("size")
 
 	if roomIdParam == "" {
@@ -149,19 +149,19 @@ func (h *Handler) GetMessages(c *fiber.Ctx) error {
 
 	roomId, _ := strconv.Atoi(roomIdParam)
 
-	if pageParam == "" || sizeParam == "" {
-		page = 0
+	if lastIdParam == "" || sizeParam == "" {
+		lastId = 0
 		size = 0
 	} else {
-		page, _ = strconv.Atoi(pageParam)
+		lastId, _ = strconv.Atoi(lastIdParam)
 		size, _ = strconv.Atoi(sizeParam)
-		if page <= 0 || size <= 0 {
-			page = 1
+		if lastId <= 0 || size <= 0 {
+			lastId = 0
 			size = 10
 		}
 	}
 
-	messages, err := h.service.GetMessages(roomId, page, size)
+	messages, err := h.service.GetMessages(roomId, lastId, size)
 
 	if err != nil {
 		switch {

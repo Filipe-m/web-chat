@@ -23,11 +23,11 @@ type broadCastMessage struct {
 	User    userInfo `json:"user"`
 }
 type storedMessages struct {
-	Id        int
-	Content   string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	User      userInfo
+	Id        int       `json:"id"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	User      userInfo  `json:"user"`
 }
 
 func NewService(repository RepositoryInterface, userService UserService) *Service {
@@ -77,7 +77,7 @@ func (s *Service) SaveMessage(message Message) (Message, error) {
 	return message, nil
 }
 
-func (s *Service) GetMessages(roomId, page, size int) ([]storedMessages, error) {
+func (s *Service) GetMessages(roomId, lastId, size int) ([]storedMessages, error) {
 	var messages []storedMessages
 	var err error
 
@@ -89,7 +89,7 @@ func (s *Service) GetMessages(roomId, page, size int) ([]storedMessages, error) 
 
 		return messages, nil
 	}
-	messages, err = s.repository.GetPaginatedMessages(roomId, page, size)
+	messages, err = s.repository.GetPaginatedMessages(roomId, lastId, size)
 	if err != nil {
 		return []storedMessages{}, err
 	}
