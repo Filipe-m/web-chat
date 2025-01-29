@@ -47,7 +47,7 @@ func (repo *Repository) GetUserByID(user *User) error {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return fmt.Errorf("usuário não encontrado: %v", err)
+			return ErrUserNotFound
 		}
 		return err
 	}

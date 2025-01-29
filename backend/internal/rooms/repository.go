@@ -78,7 +78,7 @@ func (repo *Repository) Delete(roomID, userID int) error {
 	}
 
 	if rowsAffected == 0 {
-		return fmt.Errorf("nenhum registro encontrado para deletar")
+		return ErrNotFound
 	}
 
 	return nil

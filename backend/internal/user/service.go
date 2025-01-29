@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	"net/mail"
 	"os"
 	"time"
@@ -23,13 +22,12 @@ func checkPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func (s *Service) Authenticate(credentials User) string {
+func (s *Service) Authenticate(credentials User) (string, error) {
 
 	user, err := s.repository.GetUserByEmail(credentials.Email)
 
 	if (err != nil) || (!checkPasswordHash(credentials.Password, user.Password)) {
-		fmt.Println(user)
-		return ""
+		return "", ErrUnauthorized
 	}
 
 	secret := os.Getenv("JWT")
@@ -42,10 +40,10 @@ func (s *Service) Authenticate(credentials User) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
-		return ""
+		return "", err
 	}
 
-	return tokenString
+	return tokenString, nil
 
 }
 
@@ -66,12 +64,12 @@ func (s *Service) GetUserByID(userID int) (User, error) {
 func (s *Service) Create(user User) error {
 
 	if (user.Name == "") || (user.Password == "") {
-		return fmt.Errorf("nome ou senha ausentes")
+		return ErrInvalidCredentials
 	}
 
 	_, err := mail.ParseAddress(user.Email)
 	if err != nil {
-		return fmt.Errorf("email invalido")
+		return ErrInvalidCredentials
 	}
 
 	err = s.repository.Create(&user)

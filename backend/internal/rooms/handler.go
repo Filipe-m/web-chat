@@ -2,7 +2,6 @@ package rooms
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"strconv"
 	"sync"
@@ -41,7 +40,6 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 
 	userID := int(c.Locals("id").(float64))
 
-	fmt.Println(userID)
 	chat, err := h.service.Create(request, userID)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
@@ -51,23 +49,26 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 }
 
 func (h *Handler) Delete(c *fiber.Ctx) error {
-	userID, err := strconv.Atoi(c.Locals("id").(string))
 
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
-	}
+	userID := int(c.Locals("id").(float64))
 
 	chatIDStr := c.Params("id")
 	chatID, err := strconv.Atoi(chatIDStr)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "ID inválido, deve ser um número",
+			"message": "ID inválido, deve ser um número",
 		})
 	}
 
 	err = h.service.Delete(chatID, userID)
+
 	if err != nil {
-		return c.SendStatus(fiber.StatusNoContent)
+		switch {
+		case errors.Is(err, ErrNotFound):
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": err.Error()})
+		default:
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+		}
 	}
 
 	return c.SendStatus(fiber.StatusOK)
