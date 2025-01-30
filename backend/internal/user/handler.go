@@ -7,7 +7,7 @@ import (
 )
 
 type Handler struct {
-	service *Service
+	service ServiceInterface
 }
 
 var (
@@ -16,7 +16,7 @@ var (
 	ErrInvalidCredentials = errors.New("the given credentials are invalid")
 )
 
-func NewHandler(service *Service) *Handler {
+func NewHandler(service ServiceInterface) *Handler {
 	return &Handler{service: service}
 }
 

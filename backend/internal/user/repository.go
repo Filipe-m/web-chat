@@ -7,12 +7,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Estrutura concreta
 type Repository struct {
 	DB *sql.DB
 }
 
-// Construtor para a estrutura
 func NewRepository(db *sql.DB) *Repository {
 	return &Repository{DB: db}
 }
@@ -34,7 +32,7 @@ func (repo *Repository) Create(user *User) error {
 	_, err = repo.DB.Exec(query, user.Name, password, user.Email)
 
 	if err != nil {
-		return fmt.Errorf("erro ao inserir usuário: %v", err)
+		return err
 	}
 
 	return nil
