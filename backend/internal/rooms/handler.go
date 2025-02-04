@@ -12,15 +12,15 @@ import (
 
 var (
 	ErrNotFound = errors.New("content not found")
-	//ErrUnauthorized = errors.New("not authorized")
+	ErrUnauthorized = errors.New("not authorized")
 	ErrNoContent = errors.New("no content")
 )
 
 type Handler struct {
-	service *Service
+	service ServiceInterface
 }
 
-func NewHandler(service *Service) *Handler {
+func NewHandler(service ServiceInterface) *Handler {
 	return &Handler{service: service}
 }
 

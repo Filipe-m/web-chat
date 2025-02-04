@@ -74,7 +74,7 @@ func (repo *Repository) Delete(roomID, userID int) error {
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("erro ao verificar linhas afetadas: %w", err)
+		return ErrUnauthorized
 	}
 
 	if rowsAffected == 0 {
